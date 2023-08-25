@@ -3,7 +3,7 @@
 ## Context
 
 On the dataportal (see [NA216 dataset](https://dataportal.brainminds.jp/marmoset-mri-na216)), tractography data can be inspected with an online previewer leaveraging [XTk](https://github.com/xtk/X) javascript library.
-In practice, the rendered data often looks like a dense ball of fibers, and that's not so to explore the fibers details, especially for the inner regions which are  obscured by outer regions.
+In practice, the rendered data often looks like a dense ball of fibers, and that's not so easy to explore the fibers details, especially for the inner regions which are  obscured by outer regions.
 
 ![current tracto viewer](docs/images/tracto-preview-current.png)
 
