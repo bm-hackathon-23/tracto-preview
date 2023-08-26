@@ -45,8 +45,8 @@ For example, in case of tractography data, some individual fibers may be masked 
 In a first approach, we could probably obtain the desired effect of volume cropping by simply preventing the rendering of fiber segments that extend outside the user-defined volume of interest (similar logic as length based fiber masking described above).
 
 This would work if fibers are composed of many short-length line segments (which seems a reasonable assumption since in practice fibers tend not to have long straight stretches).
-Because in this first approximation the fibers would not be strictly cut at the volume edges (but rather at their next contained segments boundaries), the volume boundaries might not appear neat.
-Moreover, we have to expect that when users define very thin volume, the number of rendered fibers might become artificially very low; We'll need to asses whether these artefact are acceptable in the context of an online preview.
+Because in this first approximation the fibers would not be strictly cut at the volume edges (but rather at the boundaries of the neighbouring segment completely contained in the cuboid), the volume boundaries might not appear neat.
+Moreover, we have to expect that when users define very thin volume, the number of rendered fibers might become artificially very low; We'll need to asses whether these artefacts are acceptable in the context of an online preview.
 
 
 ## Demo
@@ -59,6 +59,8 @@ References:
 * XTk Demo **FiberAtlas** http://demos.goxtk.com/brainfibers/
 
 ### How to run on your machine
+
+#### 0. Prerequisite: `npm` installed on your machine
 
 #### 1. Install small http server (run once)
 
