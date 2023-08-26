@@ -38,7 +38,7 @@ It means cropping the fiber rendering outside of the user defined volume, as fig
 * The shaders already includes mechanisms to adjust rendering of loaded objects depending on the value of user-defined criteria.
 For example, in case of tractography data, some individual fibers may be masked depending on their overall length.
 
-* Fiber files in `.trk` format are parsed by [`parserTRK.js`](https://github.com/xtk/X/blob/master/io/parserTRK.js). Each fiber segment is assigned a few _scalars_, including the overall length of the fiber they belong to. This enables the shader to discard the rendering of segments depending the length of their fiber.
+* Fiber files in TrackVis format (`.trk` ) are parsed by [`parserTRK.js`](https://github.com/xtk/X/blob/master/io/parserTRK.js). Each fiber segment is assigned a few _scalars_, including the overall length of the fiber they belong to. This enables the shader to discard the rendering of segments depending the length of their fiber.
 
 ### Tentative
 
@@ -49,3 +49,33 @@ Because in this first approximation the fibers would not be strictly cut at the 
 Moreover, we have to expect that when users define very thin volume, the number of rendered fibers might become artificially very low; We'll need to asses whether these artefact are acceptable in the context of an online preview.
 
 
+## Demo
+
+Standalone demo similar to the preview available on Brain/MINDS data portal ([NA216 dataset](https://dataportal.brainminds.jp/marmoset-mri-na216)).
+
+References:
+
+* XTk Lesson **#06: Connectivity** http://lessons.goxtk.com/06/
+* XTk Demo **FiberAtlas** http://demos.goxtk.com/brainfibers/
+
+### How to run on your machine
+
+#### 1. Install small http server (run once)
+
+```sh
+cd tracto-preview/demo
+npm install
+```
+
+#### 2. Start http server
+
+```sh
+cd tracto-preview/demo
+node_modules/http-server/bin/http-server . -p 8000
+```
+
+#### 3. Load http://127.0.0.1:8000/ in your web-browser.
+
+#### 4. Stop http server
+
+Press `[Ctrl]-c` to stop the server.
