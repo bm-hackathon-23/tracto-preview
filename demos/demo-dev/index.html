@@ -157,6 +157,66 @@
                     controllers.push(fiberGui.add(fibers.scalars, 'lowerThreshold', fibers.scalars.min, fibers.scalars.max));
                     controllers.push(fiberGui.add(fibers, 'opacity', 0, 1).listen());
 
+
+                    const fiberCroppingGui = fiberGui.addFolder("Cropping");
+
+                    const bbox = fibers._bbox;
+
+                    fibers.useCuboidCropping = true;
+                    fibers.crop = {
+                        xMin: bbox[0],
+                        xMax: bbox[1],
+                        yMin: bbox[2],
+                        yMax: bbox[3],
+                        zMin: bbox[4],
+                        zMax: bbox[5],
+                    };
+
+                    const cuboidInitCenter = [
+                        (bbox[1] + bbox[0]) / 2,
+                        (bbox[3] + bbox[2]) / 2,
+                        (bbox[5] + bbox[4]) / 2,
+                    ];
+                    const cuboidDim = [
+                        bbox[1] - bbox[0],
+                        bbox[3] - bbox[2],
+                        bbox[5] - bbox[4],
+                    ];
+
+                    let cuboid = {
+                        center_x : cuboidInitCenter[0],
+                        center_y : cuboidInitCenter[1],
+                        center_z : cuboidInitCenter[2],
+                        dim_x : cuboidDim[0],
+                        dim_y : cuboidDim[1],
+                        dim_z : cuboidDim[2],
+                    };
+
+                    controllers.push(fiberCroppingGui.add(fibers, 'useCuboidCropping'));
+                    controllers.push(fiberCroppingGui.add(cuboid, 'center_x', bbox[0], bbox[1]));
+                    controllers.push(fiberCroppingGui.add(cuboid, 'dim_x', 0, cuboidDim[0]));
+                    controllers.push(fiberCroppingGui.add(cuboid, 'center_y', bbox[2], bbox[3]));
+                    controllers.push(fiberCroppingGui.add(cuboid, 'dim_y', 0, cuboidDim[1]));
+                    controllers.push(fiberCroppingGui.add(cuboid, 'center_z', bbox[4], bbox[5]));
+                    controllers.push(fiberCroppingGui.add(cuboid, 'dim_z', 0, cuboidDim[2]));
+
+                    fiberCroppingGui.open();
+
+
+                    //update fiber cropping info when cropping cuboid is modified
+                    const updateCuboidCropping = () => {
+                        fibers.crop.xMin = (cuboid.center_x - (cuboid.dim_x / 2));
+                        fibers.crop.xMax = (cuboid.center_x + (cuboid.dim_x / 2));
+                        fibers.crop.yMin = (cuboid.center_y - (cuboid.dim_y / 2));
+                        fibers.crop.yMax = (cuboid.center_y + (cuboid.dim_y / 2));
+                        fibers.crop.zMin = (cuboid.center_z - (cuboid.dim_z / 2));
+                        fibers.crop.zMax = (cuboid.center_z + (cuboid.dim_z / 2));
+                    }
+                    for (let i = 1; i <= 6; i++) {
+                        controllers[controllers.length - i].onChange(updateCuboidCropping);
+                    }
+                    updateCuboidCropping();
+
                     const customContainer = document.getElementById('xtkguicontFibers');
                     if (customContainer) {
                         customContainer.appendChild(fiberGui.domElement);
