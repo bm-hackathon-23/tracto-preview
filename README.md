@@ -65,6 +65,8 @@ Basically :
 
 * `demos/demo-before/` contains a standalone demo similar to the current preview available on Brain/MINDS data portal ([NA216 dataset](https://dataportal.brainminds.jp/marmoset-mri-na216)).
 
+* `demos/demo-dev/` contains the demo that runs on the Xtk version being developed (i.e. the one shipped as submodule within this repo)
+
 References:
 
 * XTk Lesson **#06: Connectivity** http://lessons.goxtk.com/06/
@@ -107,3 +109,54 @@ node_modules/http-server/bin/http-server . -p 8000
 #### 5. Stop http server
 
 Press `[Ctrl]-c` to stop the server.
+
+
+## DEV
+
+
+### How to make change in Xtk
+
+#### prepare working dir
+
+```sh
+cd X
+git submodule init
+git submodule update
+```
+
+Refer to Xtk's [developer wiki section](https://github.com/xtk/X/wiki/X%3ADevelopersHeadsUp).
+
+#### Create builder docker image (run once)
+ 
+Because Xtk project has not been updated for a while, we had trouble to run building scripts with nowadays' version of python/java.
+<br/>We can instead use a dedicated container just for this task.
+
+```sh
+
+cd tracto-preview/scripts
+docker build -f Dockerfile.xtk-builder  -t xtk-builder .
+
+```
+
+#### Prepare X submodule for DEV (run once, and after adding new files/classes)
+
+```sh
+
+cd tracto-preview/
+docker run -it --rm --user $(id -u $USER):$(id -g $USER) --name xtk-run-build -v `pwd`/demos/demo-dev/X:/usr/src/X -w /usr/src/X xtk-builder python utils/deps.py
+
+```
+
+
+### Running demo with dev version of Xtk 
+
+```sh
+cd tracto-preview/demos/demo-dev
+node_modules/http-server/bin/http-server . -p 8000
+```
+
+Load http://127.0.0.1:8000/ in your web-browser.
+
+
+
+### Building a new Xtk bundle
