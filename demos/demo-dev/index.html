@@ -17,6 +17,9 @@
         goog.require('X.renderer2D');
         goog.require('X.volume');
 
+        goog.require('X.cube');
+
+
         const detectWebGLContext = () => {
             try {
                 // canvas element (no need to add it to the DOM)
@@ -29,6 +32,87 @@
                 return false;
             }
         };
+
+
+        const create_RectangularCuboid = (center, dim) => {
+
+            //origin centered cuboid template of size 1
+            const templateEdges = [
+                [[-0.5, 0.5, -0.5], [0.5, 0.5, -0.5]],
+                [[0.5, 0.5, -0.5], [0.5, -0.5, -0.5]],
+                [[0.5, -0.5, -0.5], [-0.5, -0.5, -0.5]],
+                [[-0.5, -0.5, -0.5], [-0.5, 0.5, -0.5]],
+
+                [[-0.5, 0.5, -0.5], [-0.5, 0.5, 0.5]],
+                [[0.5, 0.5, -0.5], [0.5, 0.5, 0.5]],
+                [[0.5, -0.5, -0.5], [0.5, -0.5, 0.5]],
+                [[-0.5, -0.5, -0.5], [-0.5, -0.5, 0.5]],
+
+                [[-0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
+                [[0.5, 0.5, 0.5], [0.5, -0.5, 0.5]],
+                [[0.5, -0.5, 0.5], [-0.5, -0.5, 0.5]],
+                [[-0.5, -0.5, 0.5], [-0.5, 0.5, 0.5]]
+            ];
+
+            const [centerX, centerY, centerZ] = center;
+            const o = new X.object();
+            o.center_x = center[0];
+            o.center_y = center[1];
+            o.center_z = center[2];
+            o.dim_x = dim[0];
+            o.dim_y = dim[1];
+            o.dim_z = dim[2];
+
+            // propagate the object configuration
+            o.type = 'LINES';
+            const size = 2;
+            o.linewidth = size;
+            o.pointsize = size;
+
+            //o.opacity = 0.5;
+
+            o.resize = function () {
+                // allocate the arrays
+                const nbEdges = templateEdges.length;
+                o.points = new X.triplets(6 * nbEdges);
+                o.normals = new X.triplets(6 * nbEdges);
+                o.colors = new X.triplets(6 * nbEdges);
+
+                templateEdges.forEach((e, i) => {
+
+                    const [x1, y1, z1] = e[0];
+                    const [x2, y2, z2] = e[1];
+
+                    const point1 = [
+                        (o.center_x + x1 * o.dim_x),
+                        (o.center_y + y1 * o.dim_y),
+                        (o.center_z + z1 * o.dim_z)
+                    ];
+                    const point2 = [
+                        (o.center_x + x2 * o.dim_x),
+                        (o.center_y + y2 * o.dim_y),
+                        (o.center_z + z2 * o.dim_z)
+                    ];
+                    o.points.add(...point1);
+                    o.points.add(...point2);
+
+                    o.colors.add(1, 1, 0.0);
+                    o.colors.add(1, 1, 0.0);
+
+                    // dummy normals
+                    o.normals.add(0, 0, 0);
+                    o.normals.add(0, 0, 0);
+
+                });
+
+                o.modified();
+
+            };
+            o.resize();
+            return o;
+
+        };
+
 
         const props = {
             dataPath: "",
@@ -183,14 +267,11 @@
                         bbox[5] - bbox[4],
                     ];
 
-                    let cuboid = {
-                        center_x : cuboidInitCenter[0],
-                        center_y : cuboidInitCenter[1],
-                        center_z : cuboidInitCenter[2],
-                        dim_x : cuboidDim[0],
-                        dim_y : cuboidDim[1],
-                        dim_z : cuboidDim[2],
-                    };
+                    let cuboid = create_RectangularCuboid(cuboidInitCenter, cuboidDim);
+                    //Important: reuse same transformation matrix than fibers
+                    cuboid._transform._matrix = fibers._transform._matrix
+
+                    fiberRenderer.add(cuboid);
 
                     controllers.push(fiberCroppingGui.add(fibers, 'useCuboidCropping'));
                     controllers.push(fiberCroppingGui.add(cuboid, 'center_x', bbox[0], bbox[1]));
@@ -205,6 +286,7 @@
 
                     //update fiber cropping info when cropping cuboid is modified
                     const updateCuboidCropping = () => {
+                        cuboid.resize();
                         fibers.crop.xMin = (cuboid.center_x - (cuboid.dim_x / 2));
                         fibers.crop.xMax = (cuboid.center_x + (cuboid.dim_x / 2));
                         fibers.crop.yMin = (cuboid.center_y - (cuboid.dim_y / 2));
