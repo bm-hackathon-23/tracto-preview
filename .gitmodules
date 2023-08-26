@@ -1,3 +1,6 @@
 [submodule "X"]
 	path = demos/demo-dev/X
 	url = https://github.com/bm-hackathon-23/X
+[submodule "demos/demo-dev/X"]
+	path = demos/demo-dev/X
+	url = https://github.com/bm-hackathon-23/X
