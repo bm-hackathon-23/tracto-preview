@@ -119,7 +119,7 @@ Press `[Ctrl]-c` to stop the server.
 #### prepare working dir
 
 ```sh
-cd X
+cd tracto-preview/demos/demo-dev/X
 git submodule init
 git submodule update
 ```
