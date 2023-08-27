@@ -126,9 +126,9 @@ npm install
 Depending on which demo you want to run, change the directory parameter for `http-server` on the following command :
 
 ```sh
-cd tracto-preview/demos/
+cd tracto-preview/
 
-node_modules/http-server/bin/http-server demos/demo-before -p 8000
+node_modules/http-server/bin/http-server demo-before -p 8000
 
 ```
 
@@ -180,8 +180,9 @@ docker run -it --rm --user $(id -u $USER):$(id -g $USER) --name xtk-run-build -v
 ### Running demo with dev version of Xtk 
 
 ```sh
-cd tracto-preview/demos/demo-dev
-node_modules/http-server/bin/http-server . -p 8000
+cd tracto-preview/demos/
+
+node_modules/http-server/bin/http-server /demo-dev -p 8000
 ```
 
 Load http://127.0.0.1:8000/ in your web-browser.
