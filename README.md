@@ -156,6 +156,7 @@ Refer to Xtk's [developer wiki section](https://github.com/xtk/X/wiki/X%3ADevelo
 
 #### Create builder docker image (run once)
  
+Xtk is shipped with specific python scripts to generate a deployable js bundle.
 Because Xtk project has not been updated for a while, we had trouble to run building scripts with nowadays' version of python/java.
 <br/>We can instead use a dedicated container just for this task.
 
@@ -189,4 +190,11 @@ Load http://127.0.0.1:8000/ in your web-browser.
 
 ### Building a new Xtk bundle
 
-[todo]
+```sh
+
+cd tracto-preview/
+docker run -it --rm --user $(id -u $USER):$(id -g $USER) --name xtk-run-build -v `pwd`/demos/demo-dev/X:/usr/src/X -w /usr/src/X xtk-builder python utils/build.py
+
+```
+
+
