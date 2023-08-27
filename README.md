@@ -47,7 +47,7 @@ For example, in case of tractography data, some individual fibers may be masked 
 #### Solution #1 - Fast & cheap
 
 In a first approach, we could probably obtain the desired effect of volume cropping by simply preventing the rendering of fiber segments that extend outside the user-defined volume of interest (similar logic as length based fiber masking described above).
-This simple approach is implemented first because it obly requires limited changes in the shaders [GLSL](https://en.wikipedia.org/wiki/OpenGL_Shading_Language) code (Xtk was written in GLSL ES 1.0); However, it has some limitations described below.
+This simple approach is implemented first because it only requires limited changes in the shaders [GLSL](https://en.wikipedia.org/wiki/OpenGL_Shading_Language) code (Xtk was written in GLSL ES 1.0); However, it has some limitations described below.
 
 ##### Limitations
 
