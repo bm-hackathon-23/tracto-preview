@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <!-- iOS meta tags -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script type="text/javascript" src="js/xtk.js"></script>
+    <script type="text/javascript" src="js/xtk_xdat.gui.js"></script>
+
+
+    <title>Tracto Viewer - Solution #1 Demo</title>
+
+    <script type="text/javascript">
+
+        const detectWebGLContext = () => {
+            try {
+                // canvas element (no need to add it to the DOM)
+                const canvas = document.createElement("canvas");
+                // get WebGLRenderingContext from canvas element.
+                const gl = canvas.getContext("webgl")
+                    || canvas.getContext("experimental-webgl");
+                return Boolean(gl && gl instanceof WebGLRenderingContext);
+            } catch (e) {
+                return false;
+            }
+        }
+
+        const create_RectangularCuboid = (center, dim) => {
+
+            //origin centered cuboid template of size 1
+            const templateEdges = [
+                [[-0.5, 0.5, -0.5], [0.5, 0.5, -0.5]],
+                [[0.5, 0.5, -0.5], [0.5, -0.5, -0.5]],
+                [[0.5, -0.5, -0.5], [-0.5, -0.5, -0.5]],
+                [[-0.5, -0.5, -0.5], [-0.5, 0.5, -0.5]],
+
+                [[-0.5, 0.5, -0.5], [-0.5, 0.5, 0.5]],
+                [[0.5, 0.5, -0.5], [0.5, 0.5, 0.5]],
+                [[0.5, -0.5, -0.5], [0.5, -0.5, 0.5]],
+                [[-0.5, -0.5, -0.5], [-0.5, -0.5, 0.5]],
+
+                [[-0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
+                [[0.5, 0.5, 0.5], [0.5, -0.5, 0.5]],
+                [[0.5, -0.5, 0.5], [-0.5, -0.5, 0.5]],
+                [[-0.5, -0.5, 0.5], [-0.5, 0.5, 0.5]]
+            ];
+
+            const [centerX, centerY, centerZ] = center;
+            const o = new X.object();
+            o.center_x = center[0];
+            o.center_y = center[1];
+            o.center_z = center[2];
+            o.dim_x = dim[0];
+            o.dim_y = dim[1];
+            o.dim_z = dim[2];
+
+            // propagate the object configuration
+            o.type = 'LINES';
+            const size = 2;
+            o.linewidth = size;
+            o.pointsize = size;
+
+            //o.opacity = 0.5;
+
+            o.resize = function () {
+                // allocate the arrays
+                const nbEdges = templateEdges.length;
+                o.points = new X.triplets(6 * nbEdges);
+                o.normals = new X.triplets(6 * nbEdges);
+                o.colors = new X.triplets(6 * nbEdges);
+
+                templateEdges.forEach((e, i) => {
+
+                    const [x1, y1, z1] = e[0];
+                    const [x2, y2, z2] = e[1];
+
+                    const point1 = [
+                        (o.center_x + x1 * o.dim_x),
+                        (o.center_y + y1 * o.dim_y),
+                        (o.center_z + z1 * o.dim_z)
+                    ];
+                    const point2 = [
+                        (o.center_x + x2 * o.dim_x),
+                        (o.center_y + y2 * o.dim_y),
+                        (o.center_z + z2 * o.dim_z)
+                    ];
+                    o.points.add(...point1);
+                    o.points.add(...point2);
+
+                    o.colors.add(1, 1, 0.0);
+                    o.colors.add(1, 1, 0.0);
+
+                    // dummy normals
+                    o.normals.add(0, 0, 0);
+                    o.normals.add(0, 0, 0);
+
+
+
+                });
+
+                o.modified();
+
+            };
+            o.resize();
+            return o;
+
+        };
+
+        const props = {
+            dataPath: "",
+            filePath: "data/001_100T.trk",
+            refVolumePath: "data/dwi_meanb0_001.nii.gz",
+        };
+
+        const run = () => {
+
+            const isWebGlEnabled = detectWebGLContext();
+
+            if (isWebGlEnabled) {
+
+                const initCameraPos = [26, 20, 26];
+                const initCameraFocus = [0, 0, 0];
+                var moveFibers = false;
+
+                // 3D renderer for fiber and volume
+                let fiberRenderer = new X.renderer3D();
+                fiberRenderer.container = "xtkrenderercontFibers";
+                fiberRenderer.init();
+
+                // create a new X.fibers
+                let fibers = new X.fibers();
+                // .. associate the TrackVis .TRK file
+
+                fibers.file = props.dataPath + props.filePath;
+
+                let volume;
+                if (props.refVolumePath) {
+                    volume = new X.volume();
+                    volume.file = props.dataPath + props.refVolumePath;
+                    fiberRenderer.add(volume);
+                }
+
+
+                let sliceX = new X.renderer2D();
+                sliceX.container = 'xtkren1sliceX';
+                sliceX.orientation = 'X';
+                sliceX.init();
+                // .. for Y
+                let sliceY = new X.renderer2D();
+                sliceY.container = 'xtkren1sliceY';
+                sliceY.orientation = 'Y';
+                sliceY.init();
+                // .. and for Z
+                let sliceZ = new X.renderer2D();
+                sliceZ.container = 'xtkren1sliceZ';
+                sliceZ.orientation = 'Z';
+                sliceZ.init();
+
+                let controllers = [];
+
+                let volumeMainGui = null;
+
+                let fiberMainGui = null;
+                fiberRenderer.onShowtime = function fiberRendererOnShowtime() {
+
+                    // just before the first rendering attempt
+
+                    if (volume) {
+
+
+                        sliceX.add(volume);
+                        sliceX.render();
+
+                        sliceY.add(volume);
+                        sliceY.render();
+
+                        sliceZ.add(volume);
+                        sliceZ.render();
+
+                        //
+                        // GUI panel
+                        //
+                        // (we need to create this during onShowtime(..) since we do not know the
+                        // volume dimensions before the loading was completed)
+                        volumeMainGui = new dat.GUI({ autoPlace: false });
+
+                        const volumeGui = volumeMainGui.addFolder("Volume")
+
+
+                        // the following configures the gui for interacting with the X.volume
+                        controllers.push(volumeGui.add(volume, 'visible'));
+
+
+                        // the min and max color which define the linear gradient mapping
+                        controllers.push(volumeGui.addColor(volume, 'minColor'));
+                        controllers.push(volumeGui.addColor(volume, 'maxColor'));
+
+                        // .. configure the volume rendering opacity
+                        controllers.push(volumeGui.add(volume, 'opacity', 0, 1).listen());
+
+
+                        // .. and the threshold in the min..max range
+                        controllers.push(volumeGui.add(volume, 'lowerThreshold', volume.min, volume.max));
+                        controllers.push(volumeGui.add(volume, 'upperThreshold', volume.min, volume.max));
+                        controllers.push(volumeGui.add(volume, 'windowLow', volume.min, volume.max).listen());
+                        const vh = volumeGui.add(volume, 'windowHigh', volume.min, volume.max).listen()
+                        controllers.push(vh);
+                        vh.setValue(4500);
+
+                        // the indexX,Y,Z are the currently displayed slice indices in the range
+                        // 0..dimensions-1
+                        controllers.push(volumeGui.add(volume, 'indexX', 0, volume.dimensions[0] - 1).listen());
+                        controllers.push(volumeGui.add(volume, 'indexY', 0, volume.dimensions[1] - 1).listen());
+                        controllers.push(volumeGui.add(volume, 'indexZ', 0, volume.dimensions[2] - 1).listen());
+
+                        const customContainer = document.getElementById('xtkguicontVolume');
+                        if (customContainer) {
+                            customContainer.appendChild(volumeGui.domElement);
+                        }
+                        volumeGui.open();
+
+                    }
+
+
+                    fiberMainGui = new dat.GUI({ autoPlace: false });
+                    const fiberGui = fiberMainGui.addFolder("Fibers")
+
+                    controllers.push(fiberGui.add(fibers, 'visible'));
+                    controllers.push(fiberGui.add(fibers.scalars, 'upperThreshold', fibers.scalars.min, fibers.scalars.max));
+                    controllers.push(fiberGui.add(fibers.scalars, 'lowerThreshold', fibers.scalars.min, fibers.scalars.max));
+                    controllers.push(fiberGui.add(fibers, 'opacity', 0, 1).listen());
+
+
+                    const fiberCroppingGui = fiberGui.addFolder("Cropping");
+
+                    const bbox = fibers.boundingBox;
+
+                    fibers.useCuboidCropping = true;
+                    fibers.crop = bbox.slice();
+
+                    const cuboidInitCenter = [
+                        (bbox[1] + bbox[0]) / 2,
+                        (bbox[3] + bbox[2]) / 2,
+                        (bbox[5] + bbox[4]) / 2,
+                    ];
+                    const cuboidDim = [
+                        bbox[1] - bbox[0],
+                        bbox[3] - bbox[2],
+                        bbox[5] - bbox[4],
+                    ];
+
+                    let cuboid = create_RectangularCuboid(cuboidInitCenter, cuboidDim);
+                    //Important: reuse same transformation matrix as fibers
+                    cuboid.transform.matrix = fibers.transform.matrix;
+
+                    fiberRenderer.add(cuboid);
+
+                    controllers.push(fiberCroppingGui.add(fibers, 'useCuboidCropping'));
+                    controllers.push(fiberCroppingGui.add(cuboid, 'center_x', bbox[0], bbox[1]));
+                    controllers.push(fiberCroppingGui.add(cuboid, 'dim_x', 0, cuboidDim[0]));
+                    controllers.push(fiberCroppingGui.add(cuboid, 'center_y', bbox[2], bbox[3]));
+                    controllers.push(fiberCroppingGui.add(cuboid, 'dim_y', 0, cuboidDim[1]));
+                    controllers.push(fiberCroppingGui.add(cuboid, 'center_z', bbox[4], bbox[5]));
+                    controllers.push(fiberCroppingGui.add(cuboid, 'dim_z', 0, cuboidDim[2]));
+
+                    fiberCroppingGui.open();
+
+
+                    //update fiber cropping info when cropping cuboid is modified
+                    const updateCuboidCropping = () => {
+                        cuboid.resize();
+                        fibers.crop = [
+                            (cuboid.center_x - (cuboid.dim_x / 2)),
+                            (cuboid.center_x + (cuboid.dim_x / 2)),
+                            (cuboid.center_y - (cuboid.dim_y / 2)),
+                            (cuboid.center_y + (cuboid.dim_y / 2)),
+                            (cuboid.center_z - (cuboid.dim_z / 2)),
+                            (cuboid.center_z + (cuboid.dim_z / 2))
+                        ];
+                    }
+                    for (let i = 1; i <= 6; i++) {
+                        controllers[controllers.length - i].onChange(updateCuboidCropping);
+                    }
+                    updateCuboidCropping();
+
+                    const customContainer = document.getElementById('xtkguicontFibers');
+                    if (customContainer) {
+                        customContainer.appendChild(fiberGui.domElement);
+                    }
+                    fiberGui.open();
+
+                }
+
+
+                fiberRenderer.add(fibers);
+
+                //set position before render
+                fiberRenderer.camera.position = initCameraPos;
+                fiberRenderer.camera.focus = initCameraFocus;
+
+                fiberRenderer.render();
+
+                //code to execute when component will unmount
+                return function cleanOnUnmount() {
+                    controllers.forEach((cont) => cont.remove());
+                    controllers.length = 0;
+                    if (fiberMainGui) fiberMainGui.destroy();
+                    fiberMainGui = null;
+                    if (volumeMainGui) volumeMainGui.destroy();
+                    volumeMainGui = null;
+                    fiberRenderer.destroy();
+                    fiberRenderer = null;
+
+                    sliceX.destroy();
+                    sliceX = null;
+                    sliceY.destroy();
+                    sliceY = null;
+                    sliceZ.destroy();
+                    sliceZ = null;
+
+                    fibers.destroy();
+                    fibers = null;
+                    volume.destroy();
+                    volume = null;
+                };
+
+            }
+
+        };
+
+
+    </script>
+
+
+<body onload="run()">
+
+
+    <div style="width:100vw; height: 100vh; ">
+
+        <div style="max-width: 100%; max-height: calc( 100% - 40px ); height: calc( 100% - 40px );">
+            <div
+                style="width: 100%; height: 100%; display: grid; grid-template-rows: minmax(0, 1fr) minmax(0, 0.3fr); gap: 1px 3px; background-color: #606060;">
+
+                <div
+                    style="width: 100%; height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.3fr); gap: 1px 3px; ">
+
+                    <div id="xtkrenderercontFibers">
+                    </div>
+
+
+                    <div style="background-color: #000; overflow-y: scroll;">
+                        <div id="xtkguicontFibers">
+                        </div>
+                        <div id="xtkguicontVolume">
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    style="background-color: #000; width: 100%; height: 100%; display: grid; grid-template-columns: 1fr 1fr 1fr">
+                    <div id="xtkren1sliceX" className="xtkrenslicecont" style="border-color: red;"></div>
+                    <div id="xtkren1sliceY" className="xtkrenslicecont" style="border-color: green;"></div>
+                    <div id="xtkren1sliceZ" className="xtkrenslicecont" style="border-color: blue;"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

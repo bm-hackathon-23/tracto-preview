@@ -94,6 +94,8 @@ So we could take advantage of some functionnalities by switch to WebGL 2.0 (whic
 
 * `demos/demo-dev/` contains the demo that runs on the Xtk version being developed (i.e. the one shipped as submodule within this repo)
 
+* `demos/demo-solution-1/` contains a standalone demo of solution #1 (with Xtk bundle built at bm-hackathon-23/X@4ba87e1e6f716ca42709323d0e1c1138faebd29a).
+ 
 References:
 
 * XTk Lesson **#06: Connectivity** http://lessons.goxtk.com/06/

@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>XTK TEST WITHOUT COMPILATION</title>
+    <title>DEMO DEV - XTK TEST WITHOUT COMPILATION</title>
 
     <script type="text/javascript" src="./X/lib/google-closure-library/closure/goog/base.js"></script>
     <script type="text/javascript" src="./X/xtk-deps.js"></script>
@@ -244,17 +244,10 @@
 
                     const fiberCroppingGui = fiberGui.addFolder("Cropping");
 
-                    const bbox = fibers._bbox;
+                    const bbox = fibers.boundingBox;
 
                     fibers.useCuboidCropping = true;
-                    fibers.crop = {
-                        xMin: bbox[0],
-                        xMax: bbox[1],
-                        yMin: bbox[2],
-                        yMax: bbox[3],
-                        zMin: bbox[4],
-                        zMax: bbox[5],
-                    };
+                    fibers.crop = bbox.slice();
 
                     const cuboidInitCenter = [
                         (bbox[1] + bbox[0]) / 2,
@@ -268,8 +261,8 @@
                     ];
 
                     let cuboid = create_RectangularCuboid(cuboidInitCenter, cuboidDim);
-                    //Important: reuse same transformation matrix than fibers
-                    cuboid._transform._matrix = fibers._transform._matrix
+                    //Important: reuse same transformation matrix as fibers
+                    cuboid.transform.matrix = fibers.transform.matrix;
 
                     fiberRenderer.add(cuboid);
 
@@ -287,12 +280,14 @@
                     //update fiber cropping info when cropping cuboid is modified
                     const updateCuboidCropping = () => {
                         cuboid.resize();
-                        fibers.crop.xMin = (cuboid.center_x - (cuboid.dim_x / 2));
-                        fibers.crop.xMax = (cuboid.center_x + (cuboid.dim_x / 2));
-                        fibers.crop.yMin = (cuboid.center_y - (cuboid.dim_y / 2));
-                        fibers.crop.yMax = (cuboid.center_y + (cuboid.dim_y / 2));
-                        fibers.crop.zMin = (cuboid.center_z - (cuboid.dim_z / 2));
-                        fibers.crop.zMax = (cuboid.center_z + (cuboid.dim_z / 2));
+                        fibers.crop = [
+                            (cuboid.center_x - (cuboid.dim_x / 2)),
+                            (cuboid.center_x + (cuboid.dim_x / 2)),
+                            (cuboid.center_y - (cuboid.dim_y / 2)),
+                            (cuboid.center_y + (cuboid.dim_y / 2)),
+                            (cuboid.center_z - (cuboid.dim_z / 2)),
+                            (cuboid.center_z + (cuboid.dim_z / 2))
+                        ];
                     }
                     for (let i = 1; i <= 6; i++) {
                         controllers[controllers.length - i].onChange(updateCuboidCropping);
@@ -384,3 +379,5 @@
     </div>
 
 </body>
+
+</html>
