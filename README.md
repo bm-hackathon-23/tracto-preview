@@ -65,6 +65,13 @@ Basically :
 * send the cuboid definition to the shader [by means of newly defined `UNIFORM`s],
 * extend vertex shader GLSL code to discard any segment extending outside of the cuboid (at least one of its vertice is outside).
 
+##### Result demo
+
+https://github.com/bm-hackathon-23/tracto-preview/assets/64643044/0023c667-2517-4204-8467-f9ac8dda1492
+
+
+
+
 
 #### Solution #2 - Natural way but a bit more complicated
 
