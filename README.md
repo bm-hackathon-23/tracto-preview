@@ -65,7 +65,9 @@ Basically :
 * send the cuboid definition to the shader [by means of newly defined `UNIFORM`s],
 * extend vertex shader GLSL code to discard any segment extending outside of the cuboid (at least one of its vertice is outside).
 
-##### Result demo
+##### Result
+
+✅ Here is a short clip showing the result of implementing solution #1
 
 https://github.com/bm-hackathon-23/tracto-preview/assets/64643044/0023c667-2517-4204-8467-f9ac8dda1492
 
@@ -88,13 +90,19 @@ So we could take advantage of some functionnalities by switch to WebGL 2.0 (whic
 <br/>There some syntax changes in current shader code that need to be addressed to make it compatible with GLSL ES 3.00.
 
 
+##### Result
+
+❌ <span style="color: black; background-color: yellow;">The implementation of solution #2 could not be achieved during the time of the Hackathon</span> 😓
+
+
+
 ## Demos
 
 * `demos/demo-before/` contains a standalone demo similar to the current preview available on Brain/MINDS data portal ([NA216 dataset](https://dataportal.brainminds.jp/marmoset-mri-na216)).
 
 * `demos/demo-dev/` contains the demo that runs on the Xtk version being developed (i.e. the one shipped as submodule within this repo)
 
-* `demos/demo-solution-1/` contains a standalone demo of solution #1 (with Xtk bundle built at bm-hackathon-23/X@4ba87e1e6f716ca42709323d0e1c1138faebd29a).
+* `demos/demo-solution-1/` contains a standalone demo of solution #1 (with Xtk bundle built at https://github.com/bm-hackathon-23/X/commit/4ba87e1e6f716ca42709323d0e1c1138faebd29a).
  
 References:
 
